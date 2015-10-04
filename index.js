@@ -21,20 +21,18 @@ var parseModule = function(data) {
     "GPL": false
   };
 
-  var Node = function(value, parent) {
-    this.value = value;
-    this.parent = parent;
-  };
-
   // If data.licenses and a license fails the test, mark warning
   var markNodeSafety = function(data) {
+    if (!data.license && !data.licenses) {
+      data.license = "unknown"
+    }
     if (data.licenses) {
       var passes = true;
       for (var i = 0; i < data.licenses.length; i++) {
-        if (rules[data.licenses[i]] === false) {
+        if (rules[data.licenses[i].type] === false) {
           passes = false;
           break;
-        } else if (!rules[data.licenses[i]] || rules[data.licenses[i]] !== true) {
+        } else if (!rules[data.licenses[i].type] || rules[data.licenses[i].type] !== true) {
           passes = "warn";
           break;
         }
@@ -53,18 +51,13 @@ var parseModule = function(data) {
 
   // Mark parent node safety status
   var markParentNode = function(parent, data) {
-    var currentParent = parent;
-    if (data.passes !== true) {
-      while (currentParent) {
-        if (data.passes === false) {
-          parent.passes = false;
-        } else if (data.passes === "warn" && parent.value && parent.passes !== false) {
-          parent.passes = "warn";
-        }
-        currentParent = parent.parent;
-      }
-    } else if (!parent.passes) {
-      parent.passes = true;
+    if (data.passes === false) {
+      parent.passes = false;
+    } else if (data.passes === "warn" && parent.passes !== false) {
+      parent.passes = "warn";
+    }
+    if (parent.parent) {
+      markParentNode(parent.parent, data);
     }
   };
 
@@ -73,17 +66,17 @@ var parseModule = function(data) {
     data.name = name;
     var dependencies = data.dependencies;
     data.dependencies = [];
+    data.parent = parent
 
-    // Create child node for each dependency that points to data object as parent
+    // Determine data object safety
+    markNodeSafety(data);
+      // Create child node for each dependency that points to data object as parent
     Object.keys(dependencies).forEach(function(depName) {
       makeNode(depName, dependencies[depName], data);
     });
 
-    // Determine data object safety
-    markNodeSafety(data);
-
-    if (parent) {
-      if (data.passes !== true) {
+    if (parent){
+      if (data.passes !== true){
         markParentNode(parent, data);
       }
       parent.dependencies.push(data);
@@ -93,7 +86,6 @@ var parseModule = function(data) {
   // Begin parsing data
   Object.keys(modules).forEach(function(modKey) {
     makeNode(modKey, modules[modKey], null);
-    // console.log(util.inspect(modules, {depth: null}));
   });
 
   return modules;
