@@ -9,6 +9,9 @@ var request = require('request');
 var path = require('path');
 var appDir = path.dirname(require.main.filename);
 
+var host = 'http://127.0.0.1:8008/';
+var uri = 'http://127.0.0.1:8008/post'
+
 var parseModule = function(data) {
 
   var modules = data.dependencies;
@@ -80,10 +83,10 @@ var parseModule = function(data) {
     markNodeSafety(data);
 
     if (parent) {
-      markParentNode(parent, data);
-      // Create data node from data object and push to parent dependencies
-      var node = new Node(data, parent);
-      parent.dependencies.push(node);
+      if (data.passes !== true) {
+        markParentNode(parent, data);
+      }
+      parent.dependencies.push(data);
     }
   }
 
@@ -124,8 +127,14 @@ module.exports = function() {
     // also, display which tests passed, which failed .. 
     request({
       method: "POST",
-      uri: 'http://127.0.0.1:8008/post',
+      uri: uri,
       json: modules
+    }, function(error, response, body) {
+      console.log(body);
+      if (!error && response.statusCode === 201) {
+        console.log('Data posted to remote. Get result details, visit: ' + host + data._id);
+      }
+      if (error) console.log('Can not post data to remote. ', err)
     });
 
   });
