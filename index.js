@@ -97,7 +97,7 @@ var parseModule = function(data) {
 
 };
 
-exports.getLegal = function() {
+module.exports = function() {
 
   prc.stdout.setEncoding('utf8');
   prc.stdout.on('data', function(chunk) {
