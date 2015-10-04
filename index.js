@@ -88,7 +88,12 @@ var parseModule = function(data) {
     makeNode(modKey, modules[modKey], null);
   });
 
-  return modules;
+  var toReturn = [];
+
+  Object.keys(modules).forEach(function(modKey){
+    toReturn.push(modules[modKey]);
+  })
+  return toReturn;
 
 };
 
