@@ -121,8 +121,7 @@ module.exports = function() {
     reduceObject(parsedObject);
     modules = parseModule(parsedObject);
 
-    console.log(modules);
-    console.log(appDir);
+
     // here, send data to remote
     // also, display which tests passed, which failed .. 
     request({
@@ -132,9 +131,9 @@ module.exports = function() {
     }, function(error, response, body) {
       console.log(body);
       if (!error && response.statusCode === 201) {
-        console.log('Data posted to remote. Get result details, visit: ' + host + data._id);
+        console.log('Data posted to remote. \n Get result details, visit: ' + host + 'get/' + body.data._id);
       }
-      if (error) console.log('Can not post data to remote. ', err)
+      if (error) console.log('Can not post data to remote. ', error)
     });
 
   });
