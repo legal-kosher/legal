@@ -5,14 +5,14 @@ var prc = spawn('npm', ['ls', '--json', '--long']);
 var data = '';
 var includes = ["name", "version", "licenses", "license", "dependencies"];
 var modules;
-
+var request = require('request');
 var path = require('path');
 var appDir = path.dirname(require.main.filename);
 
 var parseModule = function(data) {
 
   var modules = data.dependencies;
-
+  // this should come from a remote source .. 
   var rules = {
     "MIT": true,
     "GPL": false
@@ -120,7 +120,13 @@ module.exports = function() {
 
     console.log(modules);
     console.log(appDir);
-
+    // here, send data to remote
+    // also, display which tests passed, which failed .. 
+    request({
+      method: "POST",
+      uri: 'http://127.0.0.1:8008/post',
+      json: modules
+    });
 
   });
 
